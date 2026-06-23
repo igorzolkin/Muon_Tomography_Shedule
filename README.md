@@ -15,6 +15,14 @@ Start_run/
     start_stop_run.py
     run_specs.json
     send_command.bat
+
+Data_filter_TAU/
+    filtering_loop_TAU.ps1
+    check_process_TAU.ps1
+    dfilter_4layers_v1.py
+    send_to_drive_TAU.ps1
+    run_filter_TAU.bat
+
 ```
 
 ---
@@ -61,6 +69,9 @@ Before running the system, you must configure all scripts with the correct file 
     ```bat
     powershell.exe -ExecutionPolicy Bypass -File "C:\Path\To\filtering_loop.ps1" >> "%LOG_FILE%" 2>&1
     ```
+
+### Data_filter_TAU
+    - Same as Data_filter, but instead of Perl script Python script is used. Need to define another GoogleDrive and check all the Pathes
 
 ### Start_run
 
