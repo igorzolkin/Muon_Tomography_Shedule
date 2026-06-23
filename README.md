@@ -71,7 +71,7 @@ Before running the system, you must configure all scripts with the correct file 
     ```
 
 ### Data_filter_TAU
-    - Same as Data_filter, but instead of Perl script Python script is used. Need to define another GoogleDrive and check all the Pathes
+- Same as Data_filter, but instead of Perl script Python script is used. Need to define another GoogleDrive and check all the Pathes
 
 ### Start_run
 
