@@ -1,0 +1,55 @@
+# Test: pass May 21st 2025
+Write-Output "Starting data filter script..."
+
+# Define all paths
+$INPUT_DIR = "D:\Above_the_spring_raw_data"
+$OUTPUT_DIR = "D:\Above_the_spring_filtered_TAU"
+$PYTHON_SCRIPT = "C:\Users\Jerusalem1_mini\Desktop\Cronjob_code\Data_filter_TAU\filter_4layers_v1.py"
+$SEND_TO_DRIVE_SCRIPT = "C:\Users\Jerusalem1_mini\Desktop\Cronjob_code\Data_filter_TAU\send_to_drive_TAU.ps1"
+
+# Create output directory if it doesn't exist
+if (-not (Test-Path -Path $OUTPUT_DIR)) {
+    New-Item -ItemType Directory -Path $OUTPUT_DIR | Out-Null
+}
+
+# Flag to track if any new files were found
+$newFilesFound = $false
+
+# Get all .data files from input directory
+Get-ChildItem -Path $INPUT_DIR -Filter "*.data" | ForEach-Object {
+    $file = $_.FullName
+    # Extract filename without extension and create filtered output path
+    # Example: input.data -> output_filtered/input_filtered.data
+    $filename = [System.IO.Path]::GetFileNameWithoutExtension($file)
+    $output_file = Join-Path -Path $OUTPUT_DIR -ChildPath "${filename}_filter.data"
+
+    # Only process if output doesn't already exist
+    if (-not (Test-Path -Path $output_file)) {
+        $newFilesFound = $true
+        Write-Output "New file found: $file"
+        # Check if file is in use
+        $scriptPath = Join-Path -Path $PSScriptRoot -ChildPath "check_process_TAU.ps1"
+        $checkResult = & $scriptPath -FilePath $file
+        Write-Output $checkResult
+        
+        if ($LASTEXITCODE -eq 0) {
+            $startFilter = Get-Date
+            # Run the Python script
+            & python $PYTHON_SCRIPT $file $output_file
+            $filterDuration = (Get-Date) - $startFilter
+            Write-Output "Filtering completed in $($filterDuration.TotalMinutes) minutes"
+            # If Python script was successful, send the filtered file to Google Drive
+            if ($LASTEXITCODE -eq 0) {
+                $startUpload = Get-Date
+                Write-Output "Sending filtered file to Google Drive: $output_file"
+                & $SEND_TO_DRIVE_SCRIPT -FilePath $output_file
+                $uploadDuration = (Get-Date) - $startUpload
+                Write-Output "Upload completed in $($uploadDuration.TotalMinutes) minutes"
+            }
+        }
+    }
+}
+
+if (-not $newFilesFound) {
+    Write-Output "No new files spotted"
+} 
